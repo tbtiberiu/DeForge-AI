@@ -42,7 +42,7 @@ def draw_architecture(output_path):
     draw_arrow((30, 64), (30, 60))
 
     # --- Forensic Branch ---
-    ax.text(55, 82, "Ramura Forensic (NPRBranch)", fontsize=11, fontweight='bold', color='#e65100')
+    ax.text(55, 82, "Ramura Forensic (ForensicBranch)", fontsize=11, fontweight='bold', color='#e65100')
     draw_box(55, 74, "Calcul Reziduu\n(I - AvgPool(I))", width=30, height=6, color=branch_forensic_color)
     draw_box(55, 64, "Filtre SRM\n(5 nuclee 5x5)", width=30, height=6, color=branch_forensic_color)
     draw_box(55, 54, "Encoder Conv\n(BatchNorm + GELU)", width=30, height=6, color=branch_forensic_color)

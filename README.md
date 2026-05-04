@@ -15,7 +15,7 @@ DeForge-AI is a framework for detecting AI-generated images (AIGI). It utilizes 
 DeForge-AI employs a two-pronged approach to image forensics:
 
 1.  **RGB Branch**: A DINOv3 (ViT-L/16) backbone fine-tuned using Parameter-Efficient Fine-Tuning (PEFT) with LoRA. This branch captures high-level semantic features and global context.
-2.  **Forensic Branch (NPRBranch)**: A specialized "Noise Pattern Residual" branch that captures high-frequency artifacts. It is initialized with SRM (Spatial Rich Model) filters to extract noise residuals, followed by a series of convolutional layers to learn forensic signatures.
+2.  **Forensic Branch**: A specialized "Noise Pattern Residual" branch that captures high-frequency artifacts. It is initialized with SRM (Spatial Rich Model) filters to extract noise residuals, followed by a series of convolutional layers to learn forensic signatures.
 3.  **Fusion**: Features from both branches are fused using an attention-based pooling mechanism and a classification head to produce the final detection score.
 
 ## Installation
@@ -75,7 +75,7 @@ python test.py --checkpoint checkpoints/model_epoch_best.pth --batch-size 16 --i
 
 ## Project Structure
 
-- `model.py`: Architecture definition (ViT + LoRA + NPRBranch).
+- `model.py`: Architecture definition (ViT + LoRA + ForensicBranch).
 - `dataset.py`: Data loading and augmentation pipelines.
 - `train.py`: Training script for `AIGIBench`.
 - `test.py`: Benchmark evaluation script.
