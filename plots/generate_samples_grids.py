@@ -109,10 +109,13 @@ def generate_samples_grid(dataset_name, output_path):
 
 
 def main():
-    os.makedirs('plots', exist_ok=True)
+    # Resolve project root dynamically
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    output_dir = os.path.join(PROJECT_ROOT, 'images', 'samples')
+    os.makedirs(output_dir, exist_ok=True)
 
     for ds_key in DATASET_CONFIGS.keys():
-        output_file = f'plots/{ds_key.lower()}_samples.jpg'
+        output_file = os.path.join(output_dir, f'{ds_key.lower()}_samples.jpg')
         generate_samples_grid(ds_key, output_file)
 
 

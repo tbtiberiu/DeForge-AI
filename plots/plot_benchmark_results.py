@@ -264,14 +264,24 @@ faces_data = {
 }
 
 if __name__ == '__main__':
-    os.makedirs('plots', exist_ok=True)
+    # Resolve project root dynamically
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    output_dir = os.path.join(PROJECT_ROOT, 'images', 'benchmarks')
+    os.makedirs(output_dir, exist_ok=True)
 
     plot_dataset_metrics(
-        'AIGC-Detection-Benchmark', pd.DataFrame(aigc_data), 'plots/benchmark_AIGC.png'
+        'AIGC-Detection-Benchmark',
+        pd.DataFrame(aigc_data),
+        os.path.join(output_dir, 'benchmark_AIGC.png'),
     )
     plot_dataset_metrics(
-        'MS-COCOAI', pd.DataFrame(cocoai_data), 'plots/benchmark_MSCOCO.png'
+        'MS-COCOAI',
+        pd.DataFrame(cocoai_data),
+        os.path.join(output_dir, 'benchmark_MSCOCO.png'),
     )
     plot_dataset_metrics(
-        '140k-Real-and-Fake-Faces', pd.DataFrame(faces_data), 'plots/benchmark_140k.png'
+        '140k-Real-and-Fake-Faces',
+        pd.DataFrame(faces_data),
+        os.path.join(output_dir, 'benchmark_140k.png'),
     )
+

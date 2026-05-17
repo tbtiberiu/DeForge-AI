@@ -8,6 +8,11 @@ from datasets import load_dataset
 from dotenv import load_dotenv
 from torchvision.transforms import v2
 
+import sys
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from dataset import DownUpResize, GaussianNoise
 
 # Use Agg backend for headless environments
@@ -164,8 +169,9 @@ if __name__ == '__main__':
             'Warning: HF_TOKEN is not set. Some datasets might require authentication.'
         )
 
-    output_file = 'images/augmentations_samples.jpg'
-    os.makedirs('images', exist_ok=True)
+    output_dir = os.path.join(PROJECT_ROOT, 'images', 'augmentations')
+    output_file = os.path.join(output_dir, 'augmentations_samples.jpg')
+    os.makedirs(output_dir, exist_ok=True)
 
     generate_augmentations_plot(hf_token, output_file)
     print('Done!')

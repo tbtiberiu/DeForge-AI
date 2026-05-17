@@ -76,5 +76,11 @@ c2p_ap_data = {
 }
 
 if __name__ == "__main__":
-    os.makedirs('plots', exist_ok=True)
-    plot_c2p_ap_comparison(c2p_ap_data, 'plots/c2p_clip_ap_comparison.png')
+    # Resolve project root dynamically
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    output_dir = os.path.join(PROJECT_ROOT, 'images', 'benchmarks')
+    os.makedirs(output_dir, exist_ok=True)
+
+    plot_c2p_ap_comparison(
+        c2p_ap_data, os.path.join(output_dir, 'c2p_clip_ap_comparison.png')
+    )

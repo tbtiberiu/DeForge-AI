@@ -26,7 +26,7 @@ def generate_comparison_grid(hf_token, output_path):
 
     # Collect samples
     samples = {0: [], 1: [], 2: []}
-    needed = 3
+    needed = 4
 
     print('Searching for samples for the grid...')
     for item in dataset:
@@ -79,7 +79,9 @@ if __name__ == '__main__':
             'Warning: HF_TOKEN is not set in the .env file. Attempting without token...'
         )
 
-    OUTPUT_FILE = 'images/aigibench_samples.jpg'
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    OUTPUT_FILE = os.path.join(PROJECT_ROOT, 'images', 'samples', 'aigibench_samples.jpg')
+    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
 
     generate_comparison_grid(hf_token, OUTPUT_FILE)
     print('Done!')
