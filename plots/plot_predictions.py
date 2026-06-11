@@ -155,57 +155,67 @@ def main():
     print(f'Loading dataset: {args.dataset} from {config["path"]}...')
     dataset = load_dataset(config['path'], split='test', token=hf_token)
 
-    # 4. Filter indices to get a balanced representation of Real vs Fake
-    print('Analyzing labels for balanced sampling...')
-
-    # Check column names to identify label or generator column
+    # 4. Filter indices to get one sample from each generator (as equally distributed as possible)
+    print('Analyzing generator distribution for balanced sampling...')
+    
+    # Check column names to identify generator column
     if 'generator' in dataset.column_names:
         all_generators = np.array(dataset['generator'])
-        all_targets = (all_generators != 0).astype(int)
     elif 'label' in dataset.column_names:
-        all_labels = np.array(dataset['label'])
-        all_targets = (all_labels != 0).astype(int)
+        all_generators = np.array(dataset['label'])
     else:
-        # Fallback to zeros if neither is found
-        print(
-            'Warning: Neither generator nor label columns found. Defaulting target labels to 0.'
-        )
-        all_targets = np.zeros(len(dataset), dtype=int)
+        print('Warning: Neither generator nor label columns found. Defaulting generator IDs to 0.')
         all_generators = np.zeros(len(dataset), dtype=int)
 
-    real_indices = np.where(all_targets == 0)[0]
-    fake_indices = np.where(all_targets == 1)[0]
+    unique_generators = sorted(list(config['mapping'].keys()))
+    
+    # Group indices by generator ID
+    indices_by_gen = {gen_id: [] for gen_id in unique_generators}
+    for idx, gen_id in enumerate(all_generators):
+        if gen_id in indices_by_gen:
+            indices_by_gen[gen_id].append(idx)
+        else:
+            if 0 in indices_by_gen:
+                indices_by_gen[0].append(idx)
 
-    print(
-        f'Found {len(real_indices)} Real samples and {len(fake_indices)} Fake samples.'
-    )
+    # Filter out generators that have no samples in this dataset split
+    available_gens = [g for g in unique_generators if len(indices_by_gen[g]) > 0]
+    print(f'Available generators: {[config["mapping"].get(g, f"Gen {g}") for g in available_gens]}')
 
     num_samples = args.cols * args.rows
-    num_real = num_samples // 2
-    num_fake = num_samples - num_real
-
+    
+    # Distribute the slots as evenly as possible among available generators
+    samples_per_gen = {gen_id: 0 for gen_id in unique_generators}
+    
     random.seed(args.seed)
     np.random.seed(args.seed)
+    
+    slots_to_fill = num_samples
+    gens_cycle = list(available_gens)
+    
+    # Simple round-robin distribution to allocate sample count per generator
+    while slots_to_fill > 0 and gens_cycle:
+        for gen_id in list(gens_cycle):
+            if slots_to_fill == 0:
+                break
+            # Can we take another sample from this generator?
+            current_allocated = samples_per_gen[gen_id]
+            if current_allocated < len(indices_by_gen[gen_id]):
+                samples_per_gen[gen_id] += 1
+                slots_to_fill -= 1
+            else:
+                # No more samples left in this generator, remove from cycle
+                gens_cycle.remove(gen_id)
 
-    # Balanced sampling with safety fallbacks
-    if len(real_indices) >= num_real and len(fake_indices) >= num_fake:
-        selected_real = random.sample(list(real_indices), num_real)
-        selected_fake = random.sample(list(fake_indices), num_fake)
-    elif len(real_indices) < num_real:
-        selected_real = list(real_indices)
-        needed_fake = num_samples - len(selected_real)
-        selected_fake = random.sample(
-            list(fake_indices), min(len(fake_indices), needed_fake)
-        )
-    else:
-        selected_fake = list(fake_indices)
-        needed_real = num_samples - len(selected_fake)
-        selected_real = random.sample(
-            list(real_indices), min(len(real_indices), needed_real)
-        )
+    # Retrieve the indices
+    selected_indices = []
+    for gen_id, count in samples_per_gen.items():
+        if count > 0:
+            selected_indices.extend(random.sample(indices_by_gen[gen_id], count))
 
-    selected_indices = selected_real + selected_fake
+    # Shuffle selected indices to mix the subplots randomly
     random.shuffle(selected_indices)
+    print(f'Selected a total of {len(selected_indices)} samples across generators.')
 
     # 5. Inference and visualization
     val_transform = get_val_transforms(size=args.image_size)
@@ -273,7 +283,7 @@ def main():
         ax.set_title(
             f'True: {true_lbl}\nPred: {pred_lbl} ({conf:.1%})',
             color='#000000',
-            fontsize=12,
+            fontsize=14,
             fontweight='bold',
             pad=10,
         )
@@ -285,7 +295,7 @@ def main():
     # Figure labels and saving
     plt.suptitle(
         f'Model Predictions on {args.dataset}\n(Green = Correct, Red = Incorrect)',
-        fontsize=18,
+        fontsize=20,
         fontweight='bold',
         y=0.98,
         color='#000000',
